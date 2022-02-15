@@ -1,9 +1,10 @@
-import { app } from "./AppGlobal"
-console.log("App:", app)
-// var log = app.logger.createNamedLogger("ObjDB")
+import { createLogger } from "./logService"
+let log = createLogger("ObjDB")
 import { patch } from "./common/util"
 import fs from "fs"
 import { AriClientServer } from "./AriClientServer"
+
+// let newLog = (...args:any)=>app.log(args)
 
 export default class ObjDB {
 	clients: { [path: string]: AriClientServer } = {}
@@ -41,36 +42,43 @@ export default class ObjDB {
 		}
 	}
 
-	clientConnected(client: AriClientServer){
+	clientConnected(client: AriClientServer) {
+		console.log("ObjDB.clientConnected:", client.clientId)
 		this.clients[client.clientId] = client
+		// Subscribe ObjectIndex-object
+		client.rSub("idx:id")
 	}
 
-	clientDisconnected(client: AriClientServer){
+	clientDisconnected(client: AriClientServer) {
+		console.log("ObjDB.clientDisconnected:", client.clientId)
 		delete this.clients[client.clientId]
 	}
 
 	set(path: string, value: any) {
 		console.log("ObjDB.set:", path, value)
+		// newLog("ObjDB.set:", path, value)
 
 		// Insert into object model
 		let pathArray = path.split(".")
 		if (pathArray.length < 1) {
 			console.log("Error: Missing path in call to objDB.set command.")
 			return
-		} else if (pathArray.length > 2) {
-			// Insert value
+		}
+		if (pathArray.length > 1) {
+			// Insert "value"
+			console.log("Obj.set --> values", path, value)
 			this.values[path] = value
 		}
-		let prop = pathArray.shift()
 		// Patch object w. update
-		// Create if not exists
-		if (!(prop! in this.objects)) this.objects[prop!] = {}
+		let prop = pathArray.shift()
+		if (!(prop! in this.objects)) this.objects[prop!] = {} // Create if not exists
 		let obj = this.objects[prop!]
 		while (obj && pathArray.length > 1) {
 			prop = pathArray.shift()
 			if (!(prop! in obj)) {
 				obj[prop!] = {}
 			} // else nop
+			if (typeof obj[prop!] != "object") obj[prop!] = {} // Overwrite previous non-object value of property!
 			obj = obj[prop!]
 		}
 		prop = pathArray.shift()
@@ -80,23 +88,21 @@ export default class ObjDB {
 		if (path in this.subs) {
 			console.log("NotifySub:", path, value)
 			let cbs = this.subs[path]
-			if (cbs) cbs.forEach((sub) => sub(value, path))
+			if (cbs) cbs.forEach((cb) => cb(value, path))
 		}
 	}
 
 	sub(path: string, cb: (value: any, name: string) => void) {
 		// Subscribe internally
-		console.log("sub", path)
+		console.log("ObjDB.sub", path, this.values)
 		if (!(path in this.subs)) this.subs[path] = []
 		this.subs[path]!.push(cb)
 		// Send initial state
-		if (path in this.objects) cb(path, this.objects[path])
-		else if (path in this.values) cb(path, this.values[path])
+		if (path in this.objects) cb(this.objects[path], path)
+		else if (path in this.values) cb(this.values[path], path)
 		else {
 			// TODO: Subscribe @ client if not already done.
-
 		}
-
 	}
 
 	unsub(path: string, cb: (value: any, name: string) => void) {

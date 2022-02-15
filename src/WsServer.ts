@@ -1,44 +1,44 @@
-import { app } from "./AppGlobal"
-var log = app.logger.createNamedLogger("WSServer")
+import { createLogger } from "./logService"
+let log = createLogger("WsServer")
 
-import * as WebSocket from 'ws';
-import { AriClientServer } from "./AriClientServer"
+import * as WebSocket from "ws"
+
+import { BB } from "./BB"
 
 export default class WsServer {
-    connectionCount = 0
-    messageCount = 0
-    constructor(config: {port: number}) {
-        const wss: WebSocket.Server = new WebSocket.Server({ port: config.port })
-        log.debug("WebSocket server listening on port", wss.options.port)
-        var self: any = this
-        wss.on("connection", (ws: WebSocket, req: any) => {
-            log.debug("Client connected from IP:", req.socket.remoteAddress + ":" + req.socket.remotePort)
-            
-            let clientServer = new AriClientServer()
-            clientServer.protocolHandler.out_send = (msg: string) => {
-                // log.debug("->TX:", msg)
-                if (ws.readyState == ws.OPEN) ws.send(msg)
-            }
+	clients: { [clientId: number]: WebSocket } = {}
+	nextId = 0
+	constructor(bb: BB, config: { port: number }) {
+		const wss: WebSocket.Server = new WebSocket.Server({ port: config.port })
+		console.log("WebSocket server listening on port", wss.options.port)
 
-            ws.on("message", (data: string) => {
-                clientServer.protocolHandler.receive(data)
-                    // .then((ok: any) => {
-                    //     if (ok) ws.send(ok)
-                    // })
-                    // .catch((err)=>{
-                    //     ws.send(err)
-                    // })
-                this.messageCount++
-            })
-            ws.on("close", () => { 
-                clientServer.close() 
-                this.connectionCount--
-            })
-            ws.on("error", (ws: WebSocket, err: Error) => { 
-                this.connectionCount--
-            })
+		bb.on("WsServer.ins.send.v", (evt: {clientId: number, msg: string})=>{
+			if(evt.clientId in this.clients) {
+				let ws = this.clients[evt.clientId]
+				if (ws.readyState == ws.OPEN) ws.send(msg)
+				else console.log("WsServer: Error when trying to send message to disconnected client.")
+			} else console.log("WsServer: Error when trying to send message to unknown client.")
+		}) 
 
-        })
-    }
+		var self: any = this
+		wss.on("connection", (ws: WebSocket, req: any) => {
+			let clientId = self.nextId++
+			this.clients[clientId] = ws
+			console.log("Client connected from IP:", req.socket.remoteAddress + ":" + req.socket.remotePort)
+
+			ws.on("message", (data: any) => {
+				bb.emit("WsServer.outs.message.v", {clientId: clientId, msg: data})
+			})
+			ws.on("close", () => {
+				bb.emit("WsServer.outs.disconnected.v", {clientId: clientId})
+				delete this.clients[clientId]
+			})
+			ws.on("error", (ws: WebSocket, err: Error) => {
+				bb.emit("WsServer.outs.disconnected.v", {clientId: clientId})
+				delete this.clients[clientId]
+			})
+
+			bb.emit("WsServer.outs.connected.v", {clientId: clientId})
+		})
+	}
 }
-

@@ -31,4 +31,5 @@ export interface IFlow extends IFlowNode {
 	nodeType: "Flow"
 	nodes: { [id: string]: IFlowNode }
 	connections: { [id: string]: IConnection }
-}
+	selectedNodeId: string
+} 

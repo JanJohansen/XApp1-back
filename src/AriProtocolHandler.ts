@@ -13,6 +13,8 @@ export class AriProtocolHandler {
     // private -->> pendingCalls: {name: string, args: any}[] = []
     private _reqId = 0
     public out_send = (message: string) => { }   // Override to send message to peer.
+    public out_call = (msg:{name: string, args:any}): any => { }   // Override to "call" handler.
+    public out_notify = (msg: {name: string, args: any}): void => { }   // Override to send notification to peer.
     constructor() {
     }
     receive(message: string): void {
@@ -20,6 +22,7 @@ export class AriProtocolHandler {
         var json: any = undefined 
         try {
             json = JSON.parse(message)
+            // console.log("AriProtocolHandler:", message)
         }
         catch (err) {
             console.log("Error in received websocket data.")
@@ -33,6 +36,7 @@ export class AriProtocolHandler {
                     if ("req" in json) {
                         // Handle request
                         var retVal = this._requestHandlers[json.op](json.args)
+                        // let retVal = this.out_call({name: json.op, args: json.args})
                         if (retVal instanceof Promise) {
                             try {
                                 let ok = await retVal
@@ -56,8 +60,10 @@ export class AriProtocolHandler {
                     } else {
                         // Handle event/notification - Ignore any return values!
                         let self = this
-                        process.nextTick(()=>{  // Handle in next tick to maintain sequence between notifications and calls (using promise resolution/rejection).!
+                        // process.nextTick(()=>{  // Handle in next tick to maintain sequence between notifications and calls (using promise resolution/rejection).!
+                        setImmediate(()=>{  // Handle in next tick to maintain sequence between notifications and calls (using promise resolution/rejection).!
                             self._requestHandlers[json.op](json.args)
+                            this.out_notify({name: json.op, args: json.args})
                         })
                     }
                 } else {
@@ -101,11 +107,18 @@ export class AriProtocolHandler {
             setTimeout(() => {
                 // console.log("->", this.batch)
                 this.out_send(JSON.stringify(this.batch, this.__jsonReplacer))
+                // let msg = "[]"
+                // try {
+                //     msg = JSON.stringify(this.batch, this.__jsonReplacer)
+                //     this.out_send(msg)
+                // } catch {
+                //     console.log("ERROR!: Trying to send non-JSON-stringifiable message:", this.batch)
+                // }
                 this.batch = []
                 this.batching = false
             }, 1);
         } else {
-            console.log("Batching:", message)
+            // console.log("Batching:", message)
             this.batch.push(message)
         }
     }

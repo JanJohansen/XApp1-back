@@ -1,36 +1,41 @@
-import Logger from "./logService"
-import ObjDB from "./ObjDB"
-import EventEmitter from "events"
+// import WsBBServer from "./WsBBServer"
+// import Logger from "./logService"
+// import ObjDB from "./ObjDB"
+// import EventEmitter from "events"
+// import BB from "./BB"
 
-// var levelup = require('levelup')
-// var leveldown = require('leveldown')
-// var subLevel = require('subleveldown')
+// export const bb = new BB()
+// new WsBBServer(bb, { port: 3022 })
 
-// import { ModelDB } from "./ModelDb"
+// export const logger = new Logger(bb)
 
-class AppGlobal {
-  logger: Logger
-  db: ObjDB
-  eventBus = new EventEmitter.EventEmitter()
-  // Variable declarations
+// export const db = new ObjDB()
 
-  // Methods
-  private constructor() {
-    this.logger = new Logger
-    this.db = new ObjDB()
-    // this.levelDb = levelup(leveldown("../db"))
-    // this.modelDb = new ModelDB(subLevel(this.levelDb, "rt", { valueEncoding: "json" }))
-  }
+// class AppGlobal {
+// 	logger: Logger
+// 	db: ObjDB
+// 	eventBus = new EventEmitter.EventEmitter()
+// 	bb = new BB()
+// 	// Variable declarations
 
-  // Singleton instance handling
-  private static instance: AppGlobal
-  static getInstance() {
-    if (!AppGlobal.instance) AppGlobal.instance = new AppGlobal()
-    return AppGlobal.instance
-  }
+// 	// Methods
+// 	constructor() {
+// 		let wsBB = new WsBBServer(this.bb, { port: 3022 })
+// 		this.logger = new Logger(this.bb)
+//     this.db = new ObjDB()
 
-  // TS: Allow any members to be added.
-  // [name: string]: any
-}
- 
-export const app = AppGlobal.getInstance()
+// 		console.log("Creating WsLogServer")
+
+// 		// this.log = function (...args: any) {
+// 		// 	// this.bb.pub("common.log", args)
+// 		// }
+// 		// this.log("1'st msg :)")
+// 		// this.levelDb = levelup(leveldown("../db"))
+// 		// this.modelDb = new ModelDB(subLevel(this.levelDb, "rt", { valueEncoding: "json" }))
+// 	}
+
+// 	// TS: Allow any members to be added.
+// 	// [name: string]: any
+// }
+// console.log("Creating GlobalApp")
+// export const app = new AppGlobal()
