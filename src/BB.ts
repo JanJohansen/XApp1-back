@@ -11,31 +11,20 @@ X           output  cb[]            clientId
 
 For BBServer subs could be bbClientId[] to indicate which client has subscribed.
 
-* Acronym?
-Distributed
-Application 
-Framework
-
-Whiteboard
-Deployment
-Architecture
-Blackboard
-
-System
-Model
-Object
-Extended
-Extension
-
-Protocol
-Name:
-DiAF
-
-DBAEF
-
-DOMAF
-
 */
+
+//---------------------------------
+// Ideas:
+/*
+let idxs = {
+	"type": {},	// List of types indexes
+}
+*/
+//---------------------------------
+
+import { patch } from "./common/util"
+// import  crypto from "crypto"
+const crypto = require("crypto")
 
 let log = console.log //()=>{} //console.log
 
@@ -47,104 +36,166 @@ export const getGlobalBB = () => {
 	return globalInstance
 }
 export class BB {
-	items: { [name: string]: { type: string; value?: any; subs?: [(val: any, name: string) => void]; source?: any } } = {}
-	oIndex: { [name: string]: {} } = {}
-	vIndex: { [name: string]: {} } = {}
+	bbItems: { [name: string]: { type: string; value?: any; subs?: [(val: any, name: string) => void]; source?: any } } = {}
+	idxs: { [indexPropertyName: string]: {} } = {}
 
 	constructor() {}
 
 	// Values
-	pub(name: string, value: any) {
-		if (!(name in this.items)) this.items[name] = { type: "value" }
-		let item = this.items[name]
+	pub(oId: string, value: any, options: { setIfSame: boolean } = { setIfSame: true }) {
+		if(oId == ""){
+			oId = this.generateBase64Uuid()
+		}
+		// Find bb item.
+		let newOId: any = null
+		if (!(oId in this.bbItems)) {
+			this.bbItems[oId] = { type: "value" }
+			newOId = {}
+			newOId[oId] = {}
+		}
+		let item = this.bbItems[oId]
+		if (!item.value) item.value = {}
 
 		// Store value
-		// FIXME: patch instead!
-		item.value = value
+		patch(value, item.value, { setIfSame: options.setIfSame })
 
 		// Notify subs
 		if (item.subs) {
 			item.subs.forEach((cb) => {
-				cb(value, name)
+				cb(value, oId)
 			})
 		}
- 
+
 		// Update indexes
-		this.updateIndex(name)
+		this.updateIndexes(oId, value)
+
+		if (newOId != null) this.pub("oIndex", newOId)
+	}
+	pubOnChange(name: string, value: any) {
+		this.pub(name, value, {setIfSame: false})
 	}
 	sub(name: string, cb: (val: any, name: string) => void) {
-		if (!(name in this.items)) this.items[name] = { type: "value", value: undefined }
-		let item = this.items[name]
-		if (!item.subs) item.subs = [cb]
-		else item.subs.push(cb)
+		// Is it an Index Request
+		if (name.startsWith("idx:")) {
+			let idxProperty = name.slice(4)
+			if (!idxProperty) {
+				console.log("ERROR in request for index without name!")
+				return
+			}
+			console.log("INDEX RQUEST:", idxProperty)
+			this.createIndexIfNotExists(idxProperty)
+		}
+
+		// Create item.
+		if (!(name in this.bbItems)) this.bbItems[name] = { type: "value", value: undefined }
+		let item = this.bbItems[name]
+		if (!item.subs) item.subs = [cb] // If no callback yet, create first.
+		else item.subs.push(cb) // Add callback
+
 		// Initial cb
 		if (item.value != undefined) cb(item.value, name)
 
 		// Update indexes
-		this.updateIndex(name)
+		// this.updateIndexes(name, undefined)
 	}
-	// Await (or get directly) a value from the BB.
-	// E.g. bb.get("services.dbService")
-	async get(name: string): Promise<any> {}
 
-	// events
-	emit(name: string, value: any) {
-		log("BB.emit", name, "=", value)
-		if (!(name in this.items)) this.items[name] = { type: "event" }
-		let item = this.items[name]
+	// Build new index by itterating over all objects in BB.
+	private createIndexIfNotExists(idxProp: string) {
+		// Check if index exists
+		let eqPos = idxProp.indexOf("=")
+		if (eqPos > 0) {
+			// Its a prop=value index.
+			// Just check if we have generated the prop index part as the value part will be created automatically!
+			idxProp = idxProp.slice(0, eqPos)
+			console.log("Creating index:", idxProp)
+		}
+		if (!this.idxs[idxProp]) {
+			// Index doesn't exist yet.
+			this.idxs[idxProp] = {}
 
-		if (storeValuesForNonValueItems) item.value = value
-
-		// Update indexes
-		this.updateIndex(name)
-
-		// Notify subs
-		if (item.subs) {
-			item.subs.forEach((cb) => {
-				cb(value, name)
+			// CREATE index by iterting over all known objects.
+			console.log("Creating index:", idxProp)
+			let bbItemKeys = Object.keys(this.bbItems) // We might modify bbItems during iteration, so make copy!
+			// for (let oid in bbItemKeys) {
+			bbItemKeys.forEach((oid) => {
+				console.log("Checking oid:", oid, "of", bbItemKeys)
+				let upd: any = {}
+				upd[oid] = {}
+				let bbItem = this.bbItems[oid]
+				if (bbItem.value) {
+					let idxVal: string | number | [] = bbItem.value[idxProp]
+					if (Array.isArray(idxVal)) {
+						let propValArray = idxVal as Array<any>
+						propValArray.forEach((val) => {
+							this.pubOnChange("idx:" + idxProp + "=" + val, upd)
+							// "Update index property root to show value index names.""
+							let vUpd: any = {}
+							vUpd[val] = {}
+							this.pubOnChange("idx:" + idxProp, vUpd)
+						})
+					} else {
+						if (idxVal != undefined) {
+							this.pub("idx:" + idxProp + "=" + idxVal, upd)
+							// "Update index property root to show value index names.""
+							let vUpd: any = {}
+							vUpd[idxVal] = {}
+							this.pubOnChange("idx:" + idxProp, vUpd)
+						}
+					}
+				} // else value still undefined. (Could happen if bb item only subscribed to before publish!)
 			})
-		}
-	}
-	on(name: string, cb: (val: any, name: string) => void) {
-		log("BB.on", name)
-		if (!(name in this.items)) this.items[name] = { type: "event" }
-		let item = this.items[name]
-		if (!item.subs) item.subs = [cb]
-		else item.subs.push(cb)
-
-		// Update indexes
-		this.updateIndex(name)
-
-		if (storeValuesForNonValueItems) {
-			// Initial cb
-			if (item.value != undefined) cb(item.value, name)
-		}
-	}
-
-	updateIndex(name: string) {
-		// Update indexes
-		if (name.indexOf(".") <= 1) {
-			// Object index
-			if (!(name in this.oIndex)) {
-				this.oIndex[name] = {}
-				this.pub("oIndex", this.oIndex)
-			}
 		} else {
-			// Value index
-			if (!(name in this.vIndex)) {
-				console.log("vIndex: NEW NAME", name)
-				this.vIndex[name] = {}
-				this.pub("vIndex", this.vIndex)
+			// existing index - no action.
+		}
+	}
+
+	// Update indexes for one object update
+	private updateIndexes(oid: string, val: any) {
+		// Cycle through indexes to see if updates are needed.
+		if (typeof val != "object") return
+		for (let idxProp in this.idxs) {
+			if (val[idxProp]) {
+				// VlueObject has indexed property
+				let upd: any = {}
+				upd[oid] = {}
+				let idxPropVal = val[idxProp]
+				if (idxPropVal != undefined) {
+					if (Array.isArray(idxPropVal)) {
+						let propValArray = idxPropVal as Array<any>
+						propValArray.forEach((val) => {
+							this.pub("idx:" + idxProp + "=" + val, upd)
+							// "Update index property root to show value index names.""
+							let iUpd: any = {}
+							iUpd[val] = {}
+							this.pubOnChange("idx:" + idxProp, iUpd)
+							console.log("Indexed:", oid, "as", val)
+						})
+					} else {
+						this.pub("idx:" + idxPropVal, upd)
+						// "Update index property root to show value index names.""
+						let iUpd: any = {}
+						iUpd[idxPropVal] = {}
+						this.pubOnChange("idx:" + idxProp, iUpd)
+					}
+				}
 			}
 		}
 	}
+
+	// Build index - OLD approach!
+	// If obj contains idx.room = "kitchen" ==> idx:room:kitchen = {objectName: {}}
+	// If obj contains idx.room = ["kitchen", "bath"]
+	//					==> idx:room:kitchen = {objectName: {}} AND
+	//					==> idx:room:bath = {objectName: {}}
+	// !! FIXME: Need pubOnChange keyword!
+	// !! FIXME: Relies on patching instead ow overwriting!
 
 	// calls
 	async call(name: string, args: any): Promise<any> {
 		log("BB.call", name, args)
 
-		if (!(name in this.items)) this.items[name] = { type: "event" }
-		let item = this.items[name]
+		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
+		let item = this.bbItems[name]
 
 		if (storeValuesForNonValueItems) item.value = args
 
@@ -158,35 +209,66 @@ export class BB {
 			else return results[0]
 		}
 		// Update indexes
-		this.updateIndex(name)
+		this.updateIndexes(name, undefined)
 	}
 	async exec(name: string, cb: (args: any, name: string) => Promise<any>) {
 		log("BB.exec", name)
-		if (!(name in this.items)) this.items[name] = { type: "call" }
-		let item = this.items[name]
+		if (!(name in this.bbItems)) this.bbItems[name] = { type: "call" }
+		let item = this.bbItems[name]
 		if (!item.subs) item.subs = [cb]
 		else item.subs.push(cb)
 		// Update indexes
-		this.updateIndex(name)
+		this.updateIndexes(name, undefined)
 	}
 
 	exists(name: string) {
 		log("BB.exists", name)
-		if (name in this.items) return true
+		if (name in this.bbItems) return true
 		else return false
 	}
 
-	// stream
-	// write(name: string): WritableStream {
-	// 	return new WritableStream()
-	// }
-	// read(name: string): ReadableStream {
-	// 	return new ReadableStream()
-	// }
+	// Await (or get directly) a value from the BB.
+	// E.g. bb.get("services.dbService")
+	async get(name: string): Promise<any> {}
 
-	// IO ?? - Maybe allow for access restriction?
-	// SetIn(name: string, value: any) {}
-	// onIn(name: string, cb: (val: any, name: string) => void) {}
-	// SetOut(name: string, value: any) {}
-	// onOut(name: string, cb: (val: any, name: string) => void) {}
+	// events
+	emit(name: string, value: any) {
+		log("BB.emit", name, "=", value)
+		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
+		let item = this.bbItems[name]
+
+		if (storeValuesForNonValueItems) item.value = value
+
+		// Update indexes
+		this.updateIndexes(name, value)
+
+		// Notify subs
+		if (item.subs) {
+			item.subs.forEach((cb) => {
+				cb(value, name)
+			})
+		}
+	}
+	on(name: string, cb: (val: any, name: string) => void) {
+		// log("BB.on", name)
+		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
+		let item = this.bbItems[name]
+		if (!item.subs) item.subs = [cb]
+		else item.subs.push(cb)
+
+		// Update indexes
+		this.updateIndexes(name, undefined)
+
+		if (storeValuesForNonValueItems) {
+			// Initial cb
+			if (item.value != undefined) cb(item.value, name)
+		}
+	}
+
+	generateBase64Uuid(): string {
+		const uuid = "~" + crypto.randomUUID()
+		return uuid
+		// const buffer = Buffer.from(uuid, 'utf8')
+		// return buffer.toString('base64')
+	}
 }

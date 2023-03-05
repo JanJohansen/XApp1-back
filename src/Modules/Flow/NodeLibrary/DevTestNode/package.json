@@ -1,0 +1,16 @@
+{
+  "name": "devtestnode",
+  "version": "1.0.0",
+  "description": "Test node...",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JJ",
+  "license": "MIT",
+  "FlowNodeLibrary": {
+    "name": "DevLib_1",
+    "NodeCollectionFolder": "./nodes"
+  }
+}

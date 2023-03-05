@@ -1,0 +1,112 @@
+Objects:
+    - idx:
+          id: "ModuleLoaderID"
+          type: "ModuleLoader"
+      Available:
+          - ""
+    - idx:
+          id: "sd765f7sd65f"
+
+a: [
+    {
+        "id": "f27f869a.7c72d8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "7e5069a6.a791e8",
+        "type": "debug",
+        "z": "f27f869a.7c72d8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "635644f.aa765bc",
+        "type": "inject",
+        "z": "f27f869a.7c72d8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 560,
+        "y": 180,
+        "wires": [
+            [
+                "7e5069a6.a791e8"
+            ]
+        ]
+    },
+    {
+        "id": "b1108365.3286a",
+        "type": "inject",
+        "z": "f27f869a.7c72d8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 560,
+        "y": 240,
+        "wires": [
+            [
+                "7e5069a6.a791e8"
+            ]
+        ]
+    },
+    {
+        "id": "8bc8325c.4ffe7",
+        "type": "function",
+        "z": "f27f869a.7c72d8",
+        "name": "testFunc",
+        "func": "\nreturn msg;",
+        "outputs": 3,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 260,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    }
+]

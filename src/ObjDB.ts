@@ -1,6 +1,6 @@
 import { createLogger } from "./logService"
 let log = createLogger("ObjDB")
-import { patch } from "./common/util"
+import { patch } from "common2/util"
 import fs from "fs"
 import { AriClientServer } from "./AriClientServer"
 
