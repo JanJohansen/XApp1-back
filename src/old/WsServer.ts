@@ -1,9 +1,9 @@
-import { createLogger } from "./logService"
+import { createLogger } from "../logService"
 let log = createLogger("WsServer")
 
 import * as WebSocket from "ws"
 
-import { BB } from "./BB"
+import { BB } from "../BB"
 
 export default class WsServer {
 	clients: { [clientId: number]: WebSocket } = {}
@@ -12,7 +12,7 @@ export default class WsServer {
 		const wss: WebSocket.Server = new WebSocket.Server({ port: config.port })
 		console.log("WebSocket server listening on port", wss.options.port)
 
-		bb.on("WsServer.ins.send.v", (evt: {clientId: number, msg: string})=>{
+		bb.onEvent("WsServer.ins.send.v", (evt: {clientId: number, msg: string})=>{
 			if(evt.clientId in this.clients) {
 				let ws = this.clients[evt.clientId]
 				if (ws.readyState == ws.OPEN) ws.send(msg)

@@ -1,8 +1,8 @@
-import { createLogger } from "./logService"
+import { createLogger } from "../logService"
 let log = createLogger("WsServer")
 
 import * as WebSocket from "ws"
-import { globalBB } from "./BB"
+import { globalBB } from "../BB"
 import { AriClientServer } from "./AriClientServer"
 let bb = globalBB()
 

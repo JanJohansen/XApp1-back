@@ -1,4 +1,4 @@
-import { app } from "../../AppGlobal"
+import { app } from "../../old/AppGlobal"
 // var log = app.logger.createNamedLogger("XiaomiGW")
 let db = app.db
 

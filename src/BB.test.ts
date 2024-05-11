@@ -17,12 +17,12 @@ beforeAll(() => {
 })
 
 test("Subscribe to BB <Object>.", (done) => {
-	bb.on("testObjectItem", (value, name) => {
+	bb.onEvent("testObjectItem", (value, name) => {
 		// expect(value).toStrictEqual({})
 		expect(value).toMatchObject({ prop:"val" })
 		done()
 	})
-	bb.pub("testObjectItem", {prop: "val"})
+	bb.oPub("testObjectItem", {prop: "val"})
 })
 // test("Subscribe to BB <String>.", (done) => {
 // 	bb.on("testStringItem", (value, name) => {
@@ -47,10 +47,10 @@ test("Subscribe to BB <Object>.", (done) => {
 // 	bb.pub("testNumberItem", {})
 // })
 test("Object index (oIndex) creation.", (done) => {
-	bb.pub("Obj1", {})
-	bb.pub("Obj2", {})
-	bb.pub("Obj3", {})
-	bb.sub("oIndex", (value, name) => {
+	bb.oPub("Obj1", {})
+	bb.oPub("Obj2", {})
+	bb.oPub("Obj3", {})
+	bb.oSub("oIndex", (value, name) => {
 		// expect(value).toStrictEqual({ oIndex: {}, Obj1: {}, Obj2: {}, Obj3: {} })
 		console.log("V:", value)
 		expect(value).toHaveProperty("Obj1")
@@ -63,10 +63,10 @@ test("Object index (oIndex) creation.", (done) => {
 
 // Create type index - listing what types are available
 test("Index-list creation.", (done) => {
-	bb.pub("Obj1", { type: "Type1" })
-	bb.pub("Obj2", { type: "Type2" })
+	bb.oPub("Obj1", { type: "Type1" })
+	bb.oPub("Obj2", { type: "Type2" })
 
-	bb.sub("idx:type", (value, name) => {
+	bb.oSub("idx:type", (value, name) => {
 		// expect(value).to StrictEqual({ Type1: {}, Type2: {} })
 		expect(value).toHaveProperty("Type1")
 		expect(value).toHaveProperty("Type2")
@@ -76,11 +76,11 @@ test("Index-list creation.", (done) => {
 
 // Create type index - listing what _types of specific types_ are available
 test("'Value index' content update.", (done) => {
-	bb.pub("Obj1", { type: "Type1" })
-	bb.pub("Obj2", { type: "Type1" })
-	bb.pub("Obj3", { type: "Type2" })
+	bb.oPub("Obj1", { type: "Type1" })
+	bb.oPub("Obj2", { type: "Type1" })
+	bb.oPub("Obj3", { type: "Type2" })
 
-	bb.sub("idx:type=Type1", (value, name) => {
+	bb.oSub("idx:type=Type1", (value, name) => {
 		// expect(value).toStrictEqual({ Obj1: {}, Obj2: {} })
 		expect(value).toHaveProperty("Obj1")
 		expect(value).toHaveProperty("Obj2")
@@ -92,11 +92,11 @@ test("'Value index' content update.", (done) => {
 
 // Create type-array index - listing what _types of specific types_ are available
 test("'Array index creation.", (done) => {
-	bb.pub("Obj1", { type: ["Type1", "Type2" ])
-	bb.pub("Obj2", { type: "Type1" })
-	bb.pub("Obj3", { type: "Type2" })
+	bb.oPub("Obj1", { type: ["Type1", "Type2" ]})
+	bb.oPub("Obj2", { type: "Type1" })
+	bb.oPub("Obj3", { type: "Type2" })
 
-	bb.sub("idx:type=Type1", (value, name) => {
+	bb.oSub("idx:type=Type1", (value, name) => {
 		// expect(value).toStrictEqual({ Obj1: {}, Obj2: {} })
 		expect(value).toHaveProperty("Obj1")
 		expect(value).toHaveProperty("Obj2")

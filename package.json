@@ -7,7 +7,7 @@
     "test": "jest --watch dist",
     "dev:build": "tsc -w",
     "dev:copy": "cpx \"./src/common/**/*\" \"../front/src/common\" --watch --verbose",
-    "dev:run": "nodemon dist/main.js --watch dist",
+    "dev:run": "nodemon --inspect dist/main.js --watch dist",
     "dev": "concurrently -r npm:dev:*"
   },
   "author": "Jan Johansen",
@@ -26,6 +26,7 @@
   "dependencies": {
     "lumi-aqara": "^1.11.1",
     "mqtt": "^4.3.4",
+    "ts3-nodejs-library": "^3.5.1",
     "ws": "^7.4.1"
   }
 }

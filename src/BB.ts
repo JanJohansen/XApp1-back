@@ -22,7 +22,7 @@ let idxs = {
 */
 //---------------------------------
 
-import { patch } from "./common/util"
+import { patch, generateBase64Uuid } from "./common/util"
 // import  crypto from "crypto"
 const crypto = require("crypto")
 
@@ -36,24 +36,26 @@ export const getGlobalBB = () => {
 	return globalInstance
 }
 export class BB {
-	bbItems: { [name: string]: { type: string; value?: any; subs?: [(val: any, name: string) => void]; source?: any } } = {}
-	idxs: { [indexPropertyName: string]: {} } = {}
+	bbObjects: { [objectId: string]: { type: string; value?: any; subs?: [(val: any, name: string) => void]; source?: any } } = {}
+	bbValues: { [valueId: string]: { type: string; value?: any; subs?: [(val: any, name: string) => void]; source?: any } } = {}
+	objectIndexes: { [indexPropertyName: string]: {} } = {}
 
 	constructor() {}
 
-	// Values
-	pub(oId: string, value: any, options: { setIfSame: boolean } = { setIfSame: true }) {
+	// ************************************************************************
+	// Objects
+	oPub(oId: string, value: object, options: { setIfSame: boolean } = { setIfSame: true }) {
 		if(oId == ""){
-			oId = this.generateBase64Uuid()
+			oId = generateBase64Uuid()
 		}
 		// Find bb item.
 		let newOId: any = null
-		if (!(oId in this.bbItems)) {
-			this.bbItems[oId] = { type: "value" }
+		if (!(oId in this.bbObjects)) {
+			this.bbObjects[oId] = { type: "value" }
 			newOId = {}
 			newOId[oId] = {}
 		}
-		let item = this.bbItems[oId]
+		let item = this.bbObjects[oId]
 		if (!item.value) item.value = {}
 
 		// Store value
@@ -69,12 +71,17 @@ export class BB {
 		// Update indexes
 		this.updateIndexes(oId, value)
 
-		if (newOId != null) this.pub("oIndex", newOId)
+		if (newOId != null) this.oPub("oIndex", newOId)
 	}
-	pubOnChange(name: string, value: any) {
-		this.pub(name, value, {setIfSame: false})
+	oPubOnChange(name: string, value: any) {
+		this.oPub(name, value, {setIfSame: false})
 	}
-	sub(name: string, cb: (val: any, name: string) => void) {
+	oSub(name: string, cb: (val: any, name: string) => void) {
+		console.log("BB.oSub:", name)
+		if(typeof(name) != "string") {
+			console.log("ERROR in 'sub' request. name is not a string!", name)
+			return
+		}
 		// Is it an Index Request
 		if (name.startsWith("idx:")) {
 			let idxProperty = name.slice(4)
@@ -87,16 +94,24 @@ export class BB {
 		}
 
 		// Create item.
-		if (!(name in this.bbItems)) this.bbItems[name] = { type: "value", value: undefined }
-		let item = this.bbItems[name]
+		if (!(name in this.bbObjects)) {
+			this.bbObjects[name] = { type: "value", value: undefined }
+			let eObj: any = {}
+			eObj[name] = {}
+			this.oPub("oIndex", eObj)
+		}
+		let item = this.bbObjects[name]
 		if (!item.subs) item.subs = [cb] // If no callback yet, create first.
 		else item.subs.push(cb) // Add callback
 
 		// Initial cb
 		if (item.value != undefined) cb(item.value, name)
+	}
 
-		// Update indexes
-		// this.updateIndexes(name, undefined)
+	oExists(name: string) {
+		log("BB.exists", name)
+		if (name in this.bbObjects) return true
+		else return false
 	}
 
 	// Build new index by itterating over all objects in BB.
@@ -109,37 +124,45 @@ export class BB {
 			idxProp = idxProp.slice(0, eqPos)
 			console.log("Creating index:", idxProp)
 		}
-		if (!this.idxs[idxProp]) {
+		if (!this.objectIndexes[idxProp]) {
 			// Index doesn't exist yet.
-			this.idxs[idxProp] = {}
+			this.objectIndexes[idxProp] = {}
 
 			// CREATE index by iterting over all known objects.
+
 			console.log("Creating index:", idxProp)
-			let bbItemKeys = Object.keys(this.bbItems) // We might modify bbItems during iteration, so make copy!
+			let bbOIds = Object.keys(this.bbObjects) // We might modify bbItems during iteration, so make copy!
 			// for (let oid in bbItemKeys) {
-			bbItemKeys.forEach((oid) => {
-				console.log("Checking oid:", oid, "of", bbItemKeys)
+			bbOIds.forEach((oid) => {
+				console.log("Checking oid:", oid, "of", bbOIds)
 				let upd: any = {}
 				upd[oid] = {}
-				let bbItem = this.bbItems[oid]
+				let bbItem = this.bbObjects[oid]
 				if (bbItem.value) {
-					let idxVal: string | number | [] = bbItem.value[idxProp]
+					let idxVal: string | number | [] | undefined = bbItem.value[idxProp]
 					if (Array.isArray(idxVal)) {
 						let propValArray = idxVal as Array<any>
 						propValArray.forEach((val) => {
-							this.pubOnChange("idx:" + idxProp + "=" + val, upd)
+							this.oPubOnChange("idx:" + idxProp + "=" + val, upd)
 							// "Update index property root to show value index names.""
 							let vUpd: any = {}
 							vUpd[val] = {}
-							this.pubOnChange("idx:" + idxProp, vUpd)
+							this.oPubOnChange("idx:" + idxProp, vUpd)
 						})
 					} else {
 						if (idxVal != undefined) {
-							this.pub("idx:" + idxProp + "=" + idxVal, upd)
+							this.oPub("idx:" + idxProp + "=" + idxVal, upd)
 							// "Update index property root to show value index names.""
 							let vUpd: any = {}
 							vUpd[idxVal] = {}
-							this.pubOnChange("idx:" + idxProp, vUpd)
+							this.oPubOnChange("idx:" + idxProp, vUpd)
+						} else {
+							// ALso asign "idx:<idxProp>=undefined"
+							this.oPub("idx:" + idxProp + "=undefined", upd)
+							// "Update index property root to show value index names.""
+							let vUpd: any = {}
+							vUpd["undefined"] = {}
+							this.oPubOnChange("idx:" + idxProp, vUpd)
 						}
 					}
 				} // else value still undefined. (Could happen if bb item only subscribed to before publish!)
@@ -153,7 +176,7 @@ export class BB {
 	private updateIndexes(oid: string, val: any) {
 		// Cycle through indexes to see if updates are needed.
 		if (typeof val != "object") return
-		for (let idxProp in this.idxs) {
+		for (let idxProp in this.objectIndexes) {
 			if (val[idxProp]) {
 				// VlueObject has indexed property
 				let upd: any = {}
@@ -163,39 +186,88 @@ export class BB {
 					if (Array.isArray(idxPropVal)) {
 						let propValArray = idxPropVal as Array<any>
 						propValArray.forEach((val) => {
-							this.pub("idx:" + idxProp + "=" + val, upd)
+							this.oPub("idx:" + idxProp + "=" + val, upd)
 							// "Update index property root to show value index names.""
 							let iUpd: any = {}
 							iUpd[val] = {}
-							this.pubOnChange("idx:" + idxProp, iUpd)
+							this.oPubOnChange("idx:" + idxProp, iUpd)
 							console.log("Indexed:", oid, "as", val)
 						})
 					} else {
-						this.pub("idx:" + idxPropVal, upd)
+						this.oPub("idx:" + idxPropVal, upd)
 						// "Update index property root to show value index names.""
 						let iUpd: any = {}
 						iUpd[idxPropVal] = {}
-						this.pubOnChange("idx:" + idxProp, iUpd)
+						this.oPubOnChange("idx:" + idxProp, iUpd)
 					}
 				}
 			}
 		}
 	}
 
-	// Build index - OLD approach!
-	// If obj contains idx.room = "kitchen" ==> idx:room:kitchen = {objectName: {}}
-	// If obj contains idx.room = ["kitchen", "bath"]
-	//					==> idx:room:kitchen = {objectName: {}} AND
-	//					==> idx:room:bath = {objectName: {}}
-	// !! FIXME: Need pubOnChange keyword!
-	// !! FIXME: Relies on patching instead ow overwriting!
+	// ************************************************************************
+	// Values
+	vPub(valueId: string, value: any, options: { setIfSame: boolean } = { setIfSame: true }) {
+		console.log("vPub", valueId, value)
+		if (!(valueId in this.bbValues)) {
+			this.bbValues[valueId] = { type: "value" }
+			// update vIndex
+			let upd: any = {}
+			upd[valueId] = {}
+			this.oPub("vIndex", upd)
+		}
+		let item = this.bbValues[valueId]
 
+		// Store value
+		// patch(value, item.value, { setIfSame: options.setIfSame })
+		item.value = value
+
+		// Notify subs
+		if (item.subs) {
+			item.subs.forEach((cb) => {
+				cb(value, valueId)
+			})
+		}
+	}
+	// vPubOnChange(name: string, value: any) {
+	// 	this.oPub(name, value, {setIfSame: false})
+	// }
+	vSub(valueId: string, cb: (val: any, name: string) => void) {
+		console.log("BB.vSub:", valueId)
+		if(typeof(valueId) != "string") {
+			console.log("ERROR in 'sub' request. name is not a string!", valueId)
+			return
+		}
+
+		// Create item.
+		if (!(valueId in this.bbValues)) {
+			this.bbValues[valueId] = { type: "value", value: undefined }
+			let upd: any = {}
+			upd[valueId] = {}
+			this.oPub("vIndex", upd)
+		}
+		let item = this.bbValues[valueId]
+		if (!item.subs) item.subs = [cb] // If no callback yet, create first.
+		else item.subs.push(cb) // Add callback
+
+		// Initial cb
+		// if (item.value != undefined) 
+		cb(item.value, valueId)
+	}
+
+	vExists(name: string) {
+		log("BB.vExists", name)
+		if (name in this.bbValues) return true
+		else return false
+	}
+
+	// ************************************************************************
 	// calls
 	async call(name: string, args: any): Promise<any> {
 		log("BB.call", name, args)
 
-		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
-		let item = this.bbItems[name]
+		if (!(name in this.bbObjects)) this.bbObjects[name] = { type: "event" }
+		let item = this.bbObjects[name]
 
 		if (storeValuesForNonValueItems) item.value = args
 
@@ -211,31 +283,23 @@ export class BB {
 		// Update indexes
 		this.updateIndexes(name, undefined)
 	}
-	async exec(name: string, cb: (args: any, name: string) => Promise<any>) {
+	async onCall(name: string, cb: (args: any, name: string) => Promise<any>) {
 		log("BB.exec", name)
-		if (!(name in this.bbItems)) this.bbItems[name] = { type: "call" }
-		let item = this.bbItems[name]
+		if (!(name in this.bbObjects)) this.bbObjects[name] = { type: "call" }
+		let item = this.bbObjects[name]
 		if (!item.subs) item.subs = [cb]
 		else item.subs.push(cb)
 		// Update indexes
 		this.updateIndexes(name, undefined)
 	}
 
-	exists(name: string) {
-		log("BB.exists", name)
-		if (name in this.bbItems) return true
-		else return false
-	}
 
-	// Await (or get directly) a value from the BB.
-	// E.g. bb.get("services.dbService")
-	async get(name: string): Promise<any> {}
-
-	// events
+	// ************************************************************************
+	// Events
 	emit(name: string, value: any) {
 		log("BB.emit", name, "=", value)
-		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
-		let item = this.bbItems[name]
+		if (!(name in this.bbObjects)) this.bbObjects[name] = { type: "event" }
+		let item = this.bbObjects[name]
 
 		if (storeValuesForNonValueItems) item.value = value
 
@@ -249,10 +313,10 @@ export class BB {
 			})
 		}
 	}
-	on(name: string, cb: (val: any, name: string) => void) {
+	onEvent(name: string, cb: (val: any, name: string) => void) {
 		// log("BB.on", name)
-		if (!(name in this.bbItems)) this.bbItems[name] = { type: "event" }
-		let item = this.bbItems[name]
+		if (!(name in this.bbObjects)) this.bbObjects[name] = { type: "event" }
+		let item = this.bbObjects[name]
 		if (!item.subs) item.subs = [cb]
 		else item.subs.push(cb)
 
@@ -263,12 +327,5 @@ export class BB {
 			// Initial cb
 			if (item.value != undefined) cb(item.value, name)
 		}
-	}
-
-	generateBase64Uuid(): string {
-		const uuid = "~" + crypto.randomUUID()
-		return uuid
-		// const buffer = Buffer.from(uuid, 'utf8')
-		// return buffer.toString('base64')
 	}
 }

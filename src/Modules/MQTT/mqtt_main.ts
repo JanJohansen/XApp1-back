@@ -24,8 +24,8 @@ export default class MQTT {
 	constructor(bb: BB) {
 		let self = this
 		this.bb = bb
-		log.user("MQTT module started!")
-		bb.pub("MQTT", {
+		log.usr("MQTT module started!")
+		bb.oPub("MQTT", {
 			desciption: "MQTT gateway.",
 			ins: {
 				mqttServerIP: { description: "IP of server hosting the MQTT broker." },
@@ -38,16 +38,16 @@ export default class MQTT {
 				_log: { description: "Log output from object." }
 			}
 		})
-		bb.pub("MQTT.outs._connected", false)
+		bb.oPub("MQTT.outs._connected", false)
 
 		this.mqttClient = mqtt.connect("mqtt://192.168.1.100")
 
 		this.mqttClient.on("connect", function () {
-			bb.pub("MQTT.outs._connected", true)
-			bb.pub("MQTT.outs._log", "OK - Connected to MQTT broker.")
+			bb.oPub("MQTT.outs._connected", true)
+			bb.oPub("MQTT.outs._log", "OK - Connected to MQTT broker.")
 			self.mqttClient.subscribe("#", function (err) {
 				if (err) {
-					bb.pub("MQTT.outs._log", "Error when subscribing to MQTT topics (#).")
+					bb.oPub("MQTT.outs._log", "Error when subscribing to MQTT topics (#).")
 				} // else nothing
 			})
 		})
@@ -56,8 +56,8 @@ export default class MQTT {
 			// message is Buffer
 			// console.log("MQTTMessage", message.toString())
 			let value = message.toString()
-			log.developer(topic, "=", value)
-			bb.pub("MQTT." + topic, value)
+			log.dev(topic, "=", value)
+			bb.oPub("MQTT." + topic, value)
 			// client.end()
 
 			if (topic.startsWith("zigbee2mqtt")) self.handleZ2MMsg(topic, value)
@@ -112,7 +112,7 @@ export default class MQTT {
 						}
 
 						console.log("New Device:", deviceModel)
-						this.bb.pub("Z2M_" + deviceModel.ieee_address, deviceModel)
+						this.bb.oPub("Z2M_" + deviceModel.ieee_address, deviceModel)
 					}
 				}
 			}

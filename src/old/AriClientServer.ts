@@ -1,16 +1,16 @@
-import { createLogger } from "./logService"
+import { createLogger } from "../logService"
 let log = createLogger("AriClientServer")
 
 // import { glob } from "glob"
-import { AriProtocolHandler } from "./AriProtocolHandler"
-import { BB } from "./BB"
+import { AriProtocolHandler } from "../AriProtocolHandler"
+import { BB } from "../BB"
 
 let nextClientId = 1
 let clientCount = 0
 
-export class AriClientServer  {
+export class AriClientServer {
 	protocolHandler: AriProtocolHandler
-    clientId: string
+	clientId: string
 	constructor() {
 		let self = this
 		this.clientId = "" + nextClientId++
@@ -31,9 +31,9 @@ export class AriClientServer  {
 					let userName = args.user + "(1)"
 					// process.nextTick(() => {
 					setImmediate(() => {
-                        // app.eventBus.emit("clientConnected", self)
-                        objDB.clientConnected(self)
-                    })
+						// app.eventBus.emit("clientConnected", self)
+						objDB.clientConnected(self)
+					})
 					return { name: userName, token: 42 }
 				} else return { err: "Authentication failed." }
 			}
@@ -49,13 +49,13 @@ export class AriClientServer  {
 			// objDB.set(args.p, args.v)
 		})
 		this.protocolHandler.on("sub", async (args: any) => {
-			log.developer("sub", args)
+			log.dev("sub", args)
 			// objDB.sub(args, (v, p) => {
 			// 	this.protocolHandler.notify("upd", { v, p })
 			// })
-		}) 
+		})
 		this.protocolHandler.on("unsub", async (args: any) => {
-			log.developer("unsub", args)
+			log.dev("unsub", args)
 			// objDB.unsub(self.clientId, args.p)
 		})
 	}
@@ -63,12 +63,12 @@ export class AriClientServer  {
 	close() {
 		clientCount--
 		// this.objDB.set("XAServer.clientCount", clientCount)
-        // this.objDB.clientDisconnected(this)
+		// this.objDB.clientDisconnected(this)
 	}
 
-    rSub(path: string) {
-        this.protocolHandler.notify("sub", path)
-    }
+	rSub(path: string) {
+		this.protocolHandler.notify("sub", path)
+	}
 
 	//------------------
 	// Support functions

@@ -7,7 +7,7 @@ import { BB } from "./BB"
 export class ProtocolHandler {
 	pHandlers: { [clientId: number]: Protocol } = {}
 	constructor(bb: BB) {
-		bb.on("WsServer.outs.connected.v", (msg: { clientId: number }) => {
+		bb.onEvent("WsServer.outs.connected.v", (msg: { clientId: number }) => {
 			console.log("PH: CCon", msg)
 			let clientId = msg.clientId
 			if (!(msg.clientId in this.pHandlers)) this.pHandlers[msg.clientId] = new Protocol()
@@ -26,13 +26,13 @@ export class ProtocolHandler {
 
 			bb.emit("ProtocolHandler.outs.connected.v", { clientId: msg.clientId })
 		}) 
-		bb.on("WsServer.outs.message.v", (msg) => {
+		bb.onEvent("WsServer.outs.message.v", (msg) => {
 			console.log("PH: msg", msg)
 			let ph = this.pHandlers[msg.clientId]
 			if (!ph) return
 			ph.receive(msg.msg)
 		})
-		bb.on("WsServer.outs.disconnected.v", (msg) => {
+		bb.onEvent("WsServer.outs.disconnected.v", (msg) => {
 			console.log("PH: CDiscon", msg)
 			delete this.pHandlers[msg.clientId]
 			bb.emit("ProtocolHandler.outs.disconnected.v", { clientId: msg.clientId })

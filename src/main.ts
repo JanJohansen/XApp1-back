@@ -5,42 +5,28 @@ var log =  createLogger("Main")
 
 log.debug("MIX Server starting******************************************************")
 
-import { BB } from "./BB"
+import { BB, getGlobalBB } from "./BB"
 import WsBBServer from "./WsBBServer"
-import WsServer from "./WsServer"
-import { ProtocolHandler } from "./ProtocolHandler"
-import { ClientHandler } from "./ClientHandler"
-import MQTT from "./Modules/MQTT/mqtt_main"
 import FlowCore from "./Modules/Flow/FlowCore"
- 
-let serverBB = new BB()
-new WsBBServer(serverBB, { port: 3022 })
 
-// new ClientHandler(serverBB)
-// new ProtocolHandler(serverBB)
-
-// let tempBB = new BB()
-// new WsServer(tempBB, { port: 3002 })
-
-
-// import ObjDB from "./ObjDB"
-// export const db = new ObjDB()
- 
-// ----------------------------------------------------------------------------
-
+//let bb = new BB()
+let bb = getGlobalBB()
+new WsBBServer(bb, { port: 3022 })
 
 // ----------------------------------------------------------------------------
-const flow = new FlowCore(serverBB)
+// Load main BlackBoard
+const flow = new FlowCore(bb)
 
 // ----------------------------------------------------------------------------
+// import TS3 from "./TS3"
+// let ts = new TS3()
 // let xiaomiGW = new XiaomiGW()
- 
-
+// import MQTT from "./Modules/MQTT/mqtt_main"
 // let mqtt = new MQTT(serverBB)
   
 // ----------------------------------------------------------------------------
 setInterval(()=>{
-    serverBB.pub("system.time", {date: Date.now()})
+    bb.oPub("system.time", {type: ["info"], date: Date.now()})
 }, 1000 * 10)
 
 // ----------------------------------------------------------------------------

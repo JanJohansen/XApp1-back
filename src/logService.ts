@@ -10,19 +10,19 @@ interface ILogEvent {
 
 class Logger {
 	constructor() {}
-	loggers: string[] = []
+	loggers: Set<String> = new Set()
 	createNamedLogger(name: string) {
 		let logger = new NamedLogger(name, this)
-		this.loggers.push(name)
-		bb.pub("common.log.loggers", this.loggers)
+		this.loggers.add(name)
+		bb.vPub("common.log.loggers", Array.from(this.loggers))
 		return logger
 	}
 	_log(evt: ILogEvent) {
 		// Default console.listener.
 		console.log(`\x1b[90m${new Date(evt.ts!).toISOString()}\t${evt.lvl}\t${evt.src}\n\x1b[39m`, ...evt.msg)
-		bb.pub("common.log.logEvent", evt)
+		bb.vPub("common.log.logEvent", evt)
 	}
-}
+} 
 class NamedLogger {
 	name: string 
 	parentLogger: Logger
@@ -30,10 +30,10 @@ class NamedLogger {
 		this.name = name
 		this.parentLogger = parent
 	}
-	user(...msg: any) {
+	usr(...msg: any) {
 		this._log({ lvl: "usr", msg: msg })
 	}
-	developer(...msg: any) {
+	dev(...msg: any) {
 		this._log({ lvl: "dev", msg: msg })
 	}
 	debug(...msg: any) {
@@ -46,7 +46,7 @@ class NamedLogger {
 		evt.ts = Date.now()
 		evt.src = this.name
 		this.parentLogger._log(evt)
-	}
+	} 
 }
 
 const globalLogger = new Logger()
