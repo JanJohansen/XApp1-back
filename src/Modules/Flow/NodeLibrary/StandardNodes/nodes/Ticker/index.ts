@@ -16,10 +16,12 @@ export class NodeImplementation extends ModelInstance {
 		this.log.developer("Ticker setting up - YAY! :)")
 		let __timerInstance: any = null
 		let count = 0
+		// let v = 1000 || NodeTypeInfo.ins?.interval.default
 		this.on("ins.interval", (v) => {
+			if(!v) return
 			if (__timerInstance) clearInterval(__timerInstance)
 			__timerInstance = setInterval(() => {
-				this.log.developer("Tick...")
+				// this.log.developer("Tick...")
 				this.set("outs.out", count++)
 			}, v)
 		})

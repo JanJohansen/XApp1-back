@@ -1,0 +1,86 @@
+{
+    "defaultFlow": {
+        "persist": true,
+        "name": "Default flow",
+        "displayName": "Default flow",
+        "icon": "account_tree",
+        "type": [
+            "FlowNode",
+            "RootFlow"
+        ],
+        "nodeTypeId": "Flow",
+        "ins": {},
+        "outs": {},
+        "nodes": {
+            "nodeWithID1": {
+                "id": "nodeWithID1",
+                "nodeTypeId": "dk.johansenweb.console",
+                "x": 240,
+                "y": 50,
+                "config": {
+                    "ins": {
+                        "in": "Helloo"
+                    }
+                }
+            },
+            "nodeWithID2": {
+                "id": "nodeWithID2",
+                "nodeTypeId": "dk.johansenweb.ticker",
+                "x": 50,
+                "y": 50,
+                "config": {
+                    "ins": {
+                        "interval": "1000"
+                    }
+                }
+            },
+            "~AUq4SV3fU0Kjgovj": {
+                "id": "~AUq4SV3fU0Kjgovj",
+                "x": 50,
+                "y": 140,
+                "nodeTypeId": "dk.johansenweb.ticker",
+                "config": {
+                    "ins": {
+                        "interval": "2000"
+                    }
+                }
+            },
+            "~RhjV/PQbJyNDreXN": {
+                "id": "~RhjV/PQbJyNDreXN",
+                "x": 50,
+                "y": 200,
+                "nodeTypeId": "dk.johansenweb.ticker",
+                "config": {
+                    "ins": {
+                        "interval": "4000"
+                    }
+                }
+            },
+            "~ZLj4xw6F/KLWzb5k": {
+                "id": "~ZLj4xw6F/KLWzb5k",
+                "x": 50,
+                "y": 280,
+                "nodeTypeId": "dk.johansenweb.jsonvalue",
+                "config": {
+                    "ins": {
+                        "in": "{}"
+                    }
+                }
+            }
+        },
+        "connections": [
+            {
+                "inputNodeId": "nodeWithID1",
+                "inputName": "in",
+                "outputNodeId": "nodeWithID2",
+                "outputName": "out"
+            },
+            {
+                "outputNodeId": "~AUq4SV3fU0Kjgovj",
+                "outputName": "out"
+            }
+        ],
+        "_oid": "testID",
+        "nodeType": "Flow"
+    }
+}

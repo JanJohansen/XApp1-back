@@ -2,16 +2,8 @@
 // NOTE TO SELF: Files are copied from back/common --> front/common (using cpx in dev script)
 //
 
-export interface IDbObject {
-	//_oid?: string
-	// [name: string]: any
-}
-
-export interface IIdDbObject {
-	//_oid: string
-	// [name: string]: any
-}
-
+// ----------------------------------------------------------------------------
+// Object types
 export interface IValueInfo<T> {
 	vType: string
 	description?: string
@@ -50,6 +42,13 @@ export interface IValue {
 	ts?: number
 }
 
+// ----------------------------------------------------------------------------
+// Object types
+export interface IIdDbObject {
+	id: string
+	// [name: string]: any
+}
+
 export interface IFlowNodeTypeInfo extends IIdDbObject {
 	type: ["FlowNodeType", ...any]
 	nodeTypeId: string
@@ -61,8 +60,8 @@ export interface IFlowNodeTypeInfo extends IIdDbObject {
 	icon?: string
 	description?: string
 	ins?: {
-		[id: string]:
-			| IBooleanValueInfo
+		[inputName: string]:
+			IBooleanValueInfo
 			| INumberValueInfo
 			| IStringValueInfo
 			| IEnumValueInfo
@@ -70,8 +69,8 @@ export interface IFlowNodeTypeInfo extends IIdDbObject {
 			| IAnyValueInfo
 	}
 	outs?: {
-		[id: string]:
-			| IBooleanValueInfo
+		[outputName: string]:
+			IBooleanValueInfo
 			| INumberValueInfo
 			| IStringValueInfo
 			| IEnumValueInfo
@@ -100,15 +99,15 @@ export interface IChildNodeInfo {
 	x: number
 	y: number
 	nodeTypeId: string
-	preset?: { ins: { [inputName: string]: any } }
+	config: { ins: { [inputName: string]: any }; displayName?: string }
 }
 // FIXME: Either use type or interface!
 export type TChildNodeInfo = {
 	id: string
-	x: number
+	x: number 
 	y: number
 	nodeTypeId: string
-	test(): void
+	test(): void 
 }
 type TNewChildNodeInfo = Omit<IChildNodeInfo, "id">
 

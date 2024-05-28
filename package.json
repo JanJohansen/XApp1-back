@@ -7,7 +7,7 @@
     "test": "jest --watch dist",
     "dev:build": "tsc -w",
     "dev:copy": "cpx \"./src/common/**/*\" \"../front/src/common\" --watch --verbose",
-    "dev:run": "nodemon --inspect dist/main.js --watch dist",
+    "dev:run": "nodemon --inspect dist/main.js --signal SIGUSR2 --watch dist",
     "dev": "concurrently -r npm:dev:*"
   },
   "author": "Jan Johansen",

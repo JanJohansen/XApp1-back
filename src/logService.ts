@@ -19,7 +19,8 @@ class Logger {
 	}
 	_log(evt: ILogEvent) {
 		// Default console.listener.
-		console.log(`\x1b[90m${new Date(evt.ts!).toISOString()}\t${evt.lvl}\t${evt.src}\n\x1b[39m`, ...evt.msg)
+		// console.log(`\x1b[90m${new Date(evt.ts!).toISOString()}\t${evt.lvl}\t${evt.src}\n\x1b[39m`, ...evt.msg)
+		// console.log(`\x1b[90m${evt.src}\t\x1b[39m`, ...evt.msg)
 		bb.vPub("common.log.logEvent", evt)
 	}
 } 

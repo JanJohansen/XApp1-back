@@ -19,6 +19,12 @@ export const NodeTypeInfo: IFlowNodeTypeInfo = {
 			description: "Date/Time of event? (recurrence overrides 'coarser time entities'.)",
 			default: "0000.00.00-00:00:00.000"
 		},  
+	},
+	outs: {
+		time: {
+			vType: "string",
+			description: "ISO time string with current date + time."
+		}
 	}
 }
 

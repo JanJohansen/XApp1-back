@@ -3,14 +3,15 @@
 //
 
 /**
- * Patch dest object w. vaæues from src.
+ * Patch dest object w. values from src.
  * Create or delete object structure (in dest) if not there.
  * Write value if same or different!
  * @param src
  * @param dest
- * @returns
+ * @returns true if anything was patched
  */ 
-export function patch(src: any, dest: any, options = { setIfSame: true }): object {
+export function patch(src: any, dest: any, options = { setIfSame: true }): boolean {
+	let patched = false
 	for (let prop in src) {
 		if (src[prop] == null) delete dest[prop]
 		else {
@@ -19,15 +20,19 @@ export function patch(src: any, dest: any, options = { setIfSame: true }): objec
 				dest[prop] = src[prop] // Overwrite array
 			} else if (typeof src[prop] == "object") {
 				if (!(prop in dest)) dest[prop] = {}
-				patch(src[prop], dest[prop], options)
+				patched = patch(src[prop], dest[prop], options) || patched
 			} else {
-				if (options.setIfSame) dest[prop] = src[prop]
-				else if (dest[prop] != src[prop]) dest[prop] = src[prop]
-				// else dont set since values are the same!
+				if (options.setIfSame) {
+					dest[prop] = src[prop]
+					patched = true
+				} else if (dest[prop] != src[prop]) {
+					dest[prop] = src[prop] // else dont set since values are the same!
+					patched = true
+				}
 			}
 		}
 	}
-	return dest
+	return patched
 }
 
 export function generateBase64Uuid(): string {

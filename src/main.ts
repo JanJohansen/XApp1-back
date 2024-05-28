@@ -1,20 +1,20 @@
-console.log("\x1Bc") // console.clear()
+//console.log("\x1Bc") // console.clear()
 
 import {createLogger} from "./logService"
 var log =  createLogger("Main")
 
-log.debug("MIX Server starting******************************************************")
 
 import { BB, getGlobalBB } from "./BB"
 import WsBBServer from "./WsBBServer"
 import FlowCore from "./Modules/Flow/FlowCore"
 
+log.debug("MIX Server starting******************************************************")
+// ----------------------------------------------------------------------------
+// Load main BlackBoard
 //let bb = new BB()
 let bb = getGlobalBB()
 new WsBBServer(bb, { port: 3022 })
 
-// ----------------------------------------------------------------------------
-// Load main BlackBoard
 const flow = new FlowCore(bb)
 
 // ----------------------------------------------------------------------------
@@ -25,9 +25,9 @@ const flow = new FlowCore(bb)
 // let mqtt = new MQTT(serverBB)
   
 // ----------------------------------------------------------------------------
-setInterval(()=>{
-    bb.oPub("system.time", {type: ["info"], date: Date.now()})
-}, 1000 * 10)
+// setInterval(()=>{
+//     bb.oPub("system.time", {type: ["info"], date: Date.now()})
+// }, 1000 * 10) 
 
 // ----------------------------------------------------------------------------
 // Exit handlers

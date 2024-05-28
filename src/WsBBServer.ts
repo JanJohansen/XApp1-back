@@ -31,7 +31,7 @@ export default class WsBBServer {
 			ws.on("error", (ws: WebSocket, err: Error) => {})
 			
 			// -----------------------------------------------------------
-			// bind protocolhandæer to BB
+			// bind protocolhandler to BB
 			// Objects -----------
 			protocolHandler.on("oPub", (args) => {
 				log.debug("WsBB.oPub:", args)

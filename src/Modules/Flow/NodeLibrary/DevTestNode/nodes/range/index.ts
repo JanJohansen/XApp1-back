@@ -20,7 +20,7 @@ export const NodeTypeInfo: IFlowNodeTypeInfo = {
 
 export class NodeImplementation extends ModelInstance {
 	async setup() {
-		console.log("**** YAY **** - Craeted httpGet node!")
+		console.log("**** YAY **** - Craeted Range node!")
 		
 		this.on("ins.in", async (v) => {
 			this.set("outs.out1", v)
