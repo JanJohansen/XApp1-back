@@ -15,7 +15,7 @@
             "nodeWithID1": {
                 "id": "nodeWithID1",
                 "nodeTypeId": "dk.johansenweb.console",
-                "x": 240,
+                "x": 290,
                 "y": 50,
                 "config": {
                     "ins": {
@@ -26,44 +26,66 @@
             "nodeWithID2": {
                 "id": "nodeWithID2",
                 "nodeTypeId": "dk.johansenweb.ticker",
-                "x": 50,
+                "x": 110,
                 "y": 50,
                 "config": {
                     "ins": {
-                        "interval": "1000"
+                        "interval": "10000"
                     }
                 }
             },
-            "~AUq4SV3fU0Kjgovj": {
-                "id": "~AUq4SV3fU0Kjgovj",
-                "x": 50,
-                "y": 140,
-                "nodeTypeId": "dk.johansenweb.ticker",
+            "rPclLmXtm9divvKW": {
+                "id": "rPclLmXtm9divvKW",
+                "x": 290,
+                "y": 230,
+                "nodeTypeId": "dk.johansenweb.js_script",
                 "config": {
                     "ins": {
-                        "interval": "2000"
+                        "code": "setType({\r\n    description: \"Test function node. (Debounce input example.)\",\r\n    ins: {\r\n        in1: {\r\n            description: \"Input number 1\"\r\n        }\r\n    },\r\n    outs: {\r\n        out1: {\r\n            description: \"Output number 1\"\r\n        }\r\n    }\r\n})\r\n\r\nlet t = null\r\non(\"ins.in1\", (val) => {\r\n    console.log(\"VAL in:\", val)\r\n    if (t) clearTimeout(t)\r\n    t = setTimeout(() => {\r\n        set(\"outs.out1\", val)\r\n        console.log(\"VAL out:\", val)\r\n    }, 1000)\r\n})\r\n"
                     }
                 }
             },
-            "~RhjV/PQbJyNDreXN": {
-                "id": "~RhjV/PQbJyNDreXN",
-                "x": 50,
-                "y": 200,
-                "nodeTypeId": "dk.johansenweb.ticker",
+            "bR8UDldSrNXhq7G1": {
+                "id": "bR8UDldSrNXhq7G1",
+                "x": 100,
+                "y": 260,
+                "nodeTypeId": "dk.johansenweb.button",
                 "config": {
-                    "ins": {
-                        "interval": "4000"
-                    }
+                    "ins": {}
                 }
             },
-            "~ZLj4xw6F/KLWzb5k": {
-                "id": "~ZLj4xw6F/KLWzb5k",
-                "x": 50,
-                "y": 280,
+            "2dh3FCg2xuOJwaiE": {
+                "id": "2dh3FCg2xuOJwaiE",
+                "x": 40,
+                "y": 130,
                 "nodeTypeId": "dk.johansenweb.jsonvalue",
                 "config": {
                     "ins": {
-                        "in": "{}"
+                        "in": "https://www.google.com/"
+                    }
+                }
+            },
+            "GpQ0Yar4lYjhA7S7": {
+                "id": "GpQ0Yar4lYjhA7S7",
+                "x": 290,
+                "y": 120,
+                "nodeTypeId": "dk.johansenweb.httpGet",
+                "config": {
+                    "ins": {
+                        "URL": "https://google.com",
+                        "headers": {},
+                        "trigger": true
+                    }
+                }
+            },
+            "apqLrLicqgK4JSTe": {
+                "id": "apqLrLicqgK4JSTe",
+                "x": 490,
+                "y": 140,
+                "nodeTypeId": "dk.johansenweb.jsonvalue",
+                "config": {
+                    "ins": {
+                        "in": {}
                     }
                 }
             }
@@ -76,10 +98,87 @@
                 "outputName": "out"
             },
             {
-                "outputNodeId": "~AUq4SV3fU0Kjgovj",
-                "outputName": "out"
+                "outputNodeId": "bR8UDldSrNXhq7G1",
+                "outputName": "out",
+                "inputNodeId": "rPclLmXtm9divvKW",
+                "inputName": "in1"
+            },
+            {
+                "outputNodeId": "2dh3FCg2xuOJwaiE",
+                "outputName": "out",
+                "inputNodeId": "GpQ0Yar4lYjhA7S7",
+                "inputName": "URL"
+            },
+            {
+                "inputNodeId": "apqLrLicqgK4JSTe",
+                "inputName": "in"
+            },
+            {
+                "outputNodeId": "GpQ0Yar4lYjhA7S7",
+                "outputName": "result",
+                "inputNodeId": "apqLrLicqgK4JSTe",
+                "inputName": "in"
+            },
+            {
+                "outputNodeId": "rPclLmXtm9divvKW",
+                "outputName": "out1",
+                "inputNodeId": "apqLrLicqgK4JSTe",
+                "inputName": "in"
             }
         ],
+        "_oid": "testID",
+        "nodeType": "Flow",
+        "scale": 1.4641000000000006,
+        "origin": {
+            "x": 22.536380165289188,
+            "y": 25.54754628099161
+        }
+    },
+    "f2hHY1J1J3R42FdA": {
+        "type": [
+            "FlowNode",
+            "RootFlow"
+        ],
+        "nodeTypeId": "Flow",
+        "name": "New Flow...",
+        "nodes": {
+            "zceq9ZodtyI0zslh": {
+                "id": "zceq9ZodtyI0zslh",
+                "x": 60,
+                "y": 100,
+                "nodeTypeId": "dk.johansenweb.button",
+                "config": {
+                    "ins": {}
+                }
+            },
+            "KjrmcGLkNHn4jkOi": {
+                "id": "KjrmcGLkNHn4jkOi",
+                "x": 240,
+                "y": 90,
+                "nodeTypeId": "dk.johansenweb.console",
+                "config": {
+                    "ins": {}
+                }
+            }
+        },
+        "connections": [
+            {
+                "outputNodeId": "zceq9ZodtyI0zslh",
+                "outputName": "out",
+                "inputNodeId": "KjrmcGLkNHn4jkOi",
+                "inputName": "in"
+            }
+        ],
+        "scale": 1.7715610000000006,
+        "origin": {
+            "x": 56.417526742472916,
+            "y": 17.827423606612584
+        },
+        "ins": {},
+        "outs": {},
+        "persist": true,
+        "displayName": "Default flow",
+        "icon": "account_tree",
         "_oid": "testID",
         "nodeType": "Flow"
     }

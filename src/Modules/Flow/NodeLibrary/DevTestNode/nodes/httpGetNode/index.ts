@@ -1,5 +1,4 @@
-import { IFlowNodeTypeInfo } from "../../../../../../common/flowTypes"
-import { ModelInstance, IFlowNode } from "../../../../FlowCore"
+import { IFlowNodeTypeInfo, ModelInstance } from "../../../flowTypes"
  
 export const NodeTypeInfo: IFlowNodeTypeInfo = {
 	type: ["FlowNodeType"],
@@ -16,7 +15,8 @@ export const NodeTypeInfo: IFlowNodeTypeInfo = {
 		trigger: { description: "trigger HTTP GET command.", vType: "boolean", default: true },
 	},
 	outs: {
-		result: { description: "Output.", vType: "object" },
+		result: { description: "Output.", vType: "string" },
+		error: { description: "Error output.", vType: "string" },
 	}
 }
 
@@ -24,17 +24,21 @@ export class NodeImplementation extends ModelInstance {
 	url: string = ""
 	async setup() {
 		console.log("**** YAY **** - Craeted httpGet node!")
-		
+		 
 		this.on("ins.url", async (v) => {
 			this.url = v
-			this.fetch()
 		})
-
+ 
 		this.on("ins.trigger", async (v) => this.fetch())
 	}
-	async fetch(){
-		let result = await fetch(this.url)
-		this.set("outs.out1", result)
+	async fetch(){ 
+		let result = ""
+		try{
+			result = await (await fetch(this.url)).text()
+			this.set("outs.out1", result)
+		} catch (err) {
+			this.set("outs.error", err)
+		}
 	}
 } 
  

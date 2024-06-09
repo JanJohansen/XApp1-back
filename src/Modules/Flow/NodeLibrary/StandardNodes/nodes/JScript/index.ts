@@ -1,5 +1,4 @@
-import { IFlowNodeTypeInfo } from './../../../../../../common/flowTypes';
-import { ModelInstance, IFlowNode } from "../../../../FlowCore"
+import { IFlowNodeTypeInfo, ModelInstance } from "../../../flowTypes"
 
 export const NodeTypeInfo: IFlowNodeTypeInfo = {
 	type: ["FlowNodeType"],
@@ -8,18 +7,51 @@ export const NodeTypeInfo: IFlowNodeTypeInfo = {
 	nodeGroup: "Scripting",
 	description: "Programmable function node written in Java Script.",
 	ins: {
-		_script: { vType:"string", default: 'console.log("Hey from JSFunction node.")', description: "Java Script configuring the node." }
+		code: {
+			vType: "string",
+			default: 'console.log("Hey from JSFunction node.")',
+			description: "Java Script configuring the node."
+		}
 	}
 }
 
-class NodeImplementation extends ModelInstance {
+export class NodeImplementation extends ModelInstance {
 	async setup() {
 		this.log.developer("JSFunction instantiating - YAY :)")
-		this.on("ins.script", (v) => {
-			// let f = Function(`'use strict'; return (${v})`)()
-			// if(this.script.close) f.close()
-			let f: any = Function("'use strict'; return " + v)
-			f.setup()
+		const self = this
+		let f: Function = () => { 
+			console.log("Error in function definition!")
+		}
+
+		this.on("ins.code", (code) => {
+			console.log("Script updated.", self.nodeId)
+			try {
+				f = new Function("on", "set", "setType", code).bind(self)
+			} catch (e) {
+				console.log("Error in function definition!", e)
+			}
+			execute()
 		})
+
+		// this.on("ins.in1", (v) => {
+		// 	execute()
+		// })
+
+		function execute() {
+			// let f = Function(`'use strict'; return (${v})`)()
+			const on = (ioName: string, cb: (value: any)){
+				console.log("on", ioName)
+				cb(42)
+			} 
+			const set = (ioName: string, value: any){
+				console.log("set", ioName, value)
+			}
+ 
+			try {
+				f(self.on.bind(self), self.set.bind(self), self. setType.bind(self))
+			} catch (e) {
+				console.log("Error in function during execution!", e)
+			} 
+		}
 	}
-}
+} 

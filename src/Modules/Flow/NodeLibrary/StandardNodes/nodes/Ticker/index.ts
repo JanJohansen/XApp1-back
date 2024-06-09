@@ -1,5 +1,4 @@
-import { IFlowNodeTypeInfo } from './../../../../../../common/flowTypes';
-import { ModelInstance, IFlowNode } from "../../../../FlowCore"
+import { IFlowNodeTypeInfo, ModelInstance } from "../../../flowTypes"
 
 export const NodeTypeInfo: IFlowNodeTypeInfo = {
 	type: ["FlowNodeType"],

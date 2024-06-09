@@ -52,9 +52,9 @@ export default class FlowCore {
 
 		let indexFiles = glob.sync(folderGlob)
 		indexFiles.forEach(function (file: string) {
-			log.debug(`Checking: ${file}`)
+			log.debug(`Checking: ${file}`) 
 			let module = require(path.resolve(file))
-			// console.log("Module:", module)
+console.log("Module:", module) 
 			let flowNodeInfo: IFlowNodeTypeInfo = module.NodeTypeInfo
 			if (!flowNodeInfo) return
 			let type = flowNodeInfo.type
@@ -71,14 +71,17 @@ export default class FlowCore {
 			if (!classType) {
 				log.debug(`Skipping: ${file} - No NodeImplementation class found in module exports.`)
 				return
-			}
+			} 
+			// console.log("class:", JSON.stringify(classType, null, 2))
+			console.log("class:", classType)
+
 			let nodeTypeId = flowNodeInfo.nodeTypeId
 			self.flowNodeTypes[nodeTypeId] = { typeInfo: flowNodeInfo, class: classType }
 			log.debug("Loaded FlowNode:", nodeTypeId)
 			self.bb.oPub(nodeTypeId, flowNodeInfo)
 		})
 	}
-
+ 
 	// Synchronize (e.g. instatiate and delete objects defined in RootFlow models on the BB.)
 	syncNodes() {
 		this.bb.oSub("idx:type=RootFlow", (upd) => {
@@ -119,16 +122,16 @@ export default class FlowCore {
 											)
 										}
 									}
-								}
+								} 
 							} else {
-								// Node does not exist ------------------------
+								// Node instance does not exist ------------------------
 
 								// Create new SubFlowNode instance.
-								let nodeTypeId = nodeModel.nodeTypeId
+								let nodeTypeId = nodeModel!.nodeTypeId
 								let nodeTypeInfo = this.flowNodeTypes[nodeTypeId]
 								if (nodeTypeInfo) {
 									log.debug("Creating instance of", nodeTypeId)
-									this.flowNodes[subNodeId] = new nodeTypeInfo.class(this.bb, subNodeId)
+									this.flowNodes[subNodeId] = new nodeTypeInfo.class(this.bb, subNodeId, nodeModel)
 
 									// Set config..
 									const newNodeConfig = nodeModel.config
@@ -148,6 +151,8 @@ export default class FlowCore {
 								}
 							}
 						}
+
+						// Create connections.
 						for (const connectionIdx in upd.connections) {
 							const connection = upd.connections[connectionIdx]
 							const source = connection.outputNodeId + ".outs." + connection.outputName
@@ -215,28 +220,23 @@ export default class FlowCore {
 
 //-----------------------------------------------------------------------------
 export abstract class ModelInstance {
-	// model: IFlowNode = {
-	// 	type: ["FlowNode"],
-	// 	nodeType: "?",
-	// 	_oid: ""
-	// }
-	// __listeners: { [path: string]: (value: any, path: string) => void } = {}
 	nodeId: string
 	bb: BB
-	constructor(bb: BB, nodeId: string) {
+	nodeModel: IFlowNode
+	constructor(bb: BB, nodeId: string, nodeModel: IFlowNode) {
 		this.bb = bb
 		this.nodeId = nodeId
-		this.initializeNode()
+		this.nodeModel = nodeModel
+		setImmediate(this.initializeBaseNode.bind(this))
 	}
-	async initializeNode() {
+	private async initializeBaseNode() {
 		// Define "static" part of the object model to replresent instnce.
 		// Messages and UI variable to be sent via vPub...
 		this.bb.oPub(this.nodeId, {
 			type: "FlowNode",
-			flowNodeTypeId: "TBD!",
-			deployed: true
-		})
-
+			flowNodeTypeId: this.typeInfo?.nodeTypeId,
+			deployed: true 
+		}) 
 		// // set default inputs if not existing
 		// this.bb.oSub(this.nodeId, (nodeUpd: IFlowNode) => {
 		// 	if (nodeUpd.nodeTypeId) {
@@ -253,7 +253,7 @@ export abstract class ModelInstance {
 		// 				}
 		// 			}
 		// 		})
-		// 	}
+		// 	} 
 		// })
 
 		// Run node specific setup
@@ -286,6 +286,10 @@ export abstract class ModelInstance {
 	}
 	onAny(cb: (value: any, path: string) => void): void {}
 	onAll(paths: string[], cb: (value: any, path: string) => void): void {}
+
+	setType(typeModel: any){
+		this.bb.oPub(this.nodeId, typeModel) 
+	}
 
 	log = {
 		developer: console.log

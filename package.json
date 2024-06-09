@@ -8,7 +8,8 @@
     "dev:build": "tsc -w",
     "dev:copy": "cpx \"./src/common/**/*\" \"../front/src/common\" --watch --verbose",
     "dev:run": "nodemon --inspect dist/main.js --signal SIGUSR2 --watch dist",
-    "dev": "concurrently -r npm:dev:*"
+    "dev": "concurrently -r npm:dev:*",
+    "debug": "nodemon --inspect dist/main.js --signal SIGINT --watch dist"
   },
   "author": "Jan Johansen",
   "license": "MIT",

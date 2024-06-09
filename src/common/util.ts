@@ -9,7 +9,7 @@
  * @param src
  * @param dest
  * @returns true if anything was patched
- */ 
+ */
 export function patch(src: any, dest: any, options = { setIfSame: true }): boolean {
 	let patched = false
 	for (let prop in src) {
@@ -19,7 +19,10 @@ export function patch(src: any, dest: any, options = { setIfSame: true }): boole
 			if (Array.isArray(src[prop])) {
 				dest[prop] = src[prop] // Overwrite array
 			} else if (typeof src[prop] == "object") {
-				if (!(prop in dest)) dest[prop] = {}
+				if (!(prop in dest)) {
+					dest[prop] = {}
+					patched = true
+				}
 				patched = patch(src[prop], dest[prop], options) || patched
 			} else {
 				if (options.setIfSame) {
@@ -35,10 +38,13 @@ export function patch(src: any, dest: any, options = { setIfSame: true }): boole
 	return patched
 }
 
-export function generateBase64Uuid(): string {
-	const randomBytes = new Uint8Array(12);
-	crypto.getRandomValues(randomBytes);
-	const base64String = "~" + btoa(String.fromCharCode.apply(null, randomBytes));
-	console.log(base64String); // prints a random 128-bit base64-encoded string
-	return base64String
+export function generateUid(): string {
+	let id = ""
+	const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const numChars = characters.length
+	const idLength = 16
+	for (var i = 0; i < idLength; i++) {
+		id += characters.charAt(Math.floor(Math.random() * numChars))
+	}
+	return id 
 }

@@ -45,7 +45,7 @@ export interface IValue {
 // ----------------------------------------------------------------------------
 // Object types
 export interface IIdDbObject {
-	id: string
+	// id: string
 	// [name: string]: any
 }
 
@@ -82,7 +82,6 @@ export interface IFlowNodeTypeInfo extends IIdDbObject {
 export interface IFlowNode extends IIdDbObject {
 	type: ["FlowNode", ...any]
 	nodeTypeId: string
-	displayName: string
 	ins?: { [id: string]: IValue }
 	outs?: { [id: string]: IValue }
 }
@@ -116,9 +115,10 @@ export interface IFlowModel extends IFlowNode {
 	name: string
 	icon?: string
 	nodeTypeId: "Flow"
-	nodes: { [nodeId: string]: IChildNodeInfo }
+	nodes: { [nodeId: string]: IChildNodeInfo | null}
 	connections: IFlowConnection[]
-	selectedNodeId?: string
+	scale: number
+	origin: { x: number; y: number }
 	active?: boolean
 	lastCommitTS?: number
 	lastCommitUserId?: string

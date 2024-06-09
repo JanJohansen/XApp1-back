@@ -1,4 +1,4 @@
-import { patch, generateBase64Uuid } from "./common/util"
+import { patch, generateUid } from "./common/util"
 // import  crypto from "crypto"
 const crypto = require("crypto")
 var fs = require("fs")
@@ -45,7 +45,7 @@ export class BB {
 				console.log("******************** Stop event received:", eventType)
 				if (eventType != "exit") process.exit()
 				else {
-					console.log("Persisting persis-marked states...")
+					console.log("Persisting persist-marked states...")
 					let state: any = {}
 					for (const oid in this.bbObjects) {
 						// Only persist objects with persist=true set!
@@ -62,7 +62,7 @@ export class BB {
 	// Objects
 	oPub(oId: string, value: object, options: { setIfSame: boolean } = { setIfSame: true }) {
 		if (oId == "") {
-			oId = generateBase64Uuid()
+			oId = generateUid()
 		}
 		// Find bb item.
 		let newOId: any = null
