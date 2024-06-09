@@ -34,17 +34,6 @@
                     }
                 }
             },
-            "rPclLmXtm9divvKW": {
-                "id": "rPclLmXtm9divvKW",
-                "x": 290,
-                "y": 230,
-                "nodeTypeId": "dk.johansenweb.js_script",
-                "config": {
-                    "ins": {
-                        "code": "setType({\r\n    description: \"Test function node. (Debounce input example.)\",\r\n    ins: {\r\n        in1: {\r\n            description: \"Input number 1\"\r\n        }\r\n    },\r\n    outs: {\r\n        out1: {\r\n            description: \"Output number 1\"\r\n        }\r\n    }\r\n})\r\n\r\nlet t = null\r\non(\"ins.in1\", (val) => {\r\n    console.log(\"VAL in:\", val)\r\n    if (t) clearTimeout(t)\r\n    t = setTimeout(() => {\r\n        set(\"outs.out1\", val)\r\n        console.log(\"VAL out:\", val)\r\n    }, 1000)\r\n})\r\n"
-                    }
-                }
-            },
             "bR8UDldSrNXhq7G1": {
                 "id": "bR8UDldSrNXhq7G1",
                 "x": 100,
@@ -88,6 +77,17 @@
                         "in": {}
                     }
                 }
+            },
+            "yfJFpYLnFZDl8QZE": {
+                "id": "yfJFpYLnFZDl8QZE",
+                "x": 300,
+                "y": 270,
+                "nodeTypeId": "dk.johansenweb.js_script",
+                "config": {
+                    "ins": {
+                        "code": "setType({\r\n\tname: \"Debounce\",\r\n\tnodeGroup: \"IO\",\r\n\tnodeTypeId: \"dk.johansenweb.debouncer\",\r\n\tdescription: \"Test function node. (Debounce input example.)\",\r\n\tins: { in1: { description: \"Input number 1\" } },\r\n\touts: { out1: { description: \"Output number 1\" } }\r\n})\r\n\r\nsetup(async () => {\r\n\tlet t = null\r\n\ton(\"ins.in1\", (val) => {\r\n\t\tlog(\"VAL in:\", val)\r\n\t\tif (t) clearTimeout(t)\r\n\t\tt = setTimeout(() => {\r\n\t\t\tset(\"outs.out1\", val)\r\n\t\t\tlog(\"VAL out:\", val)\r\n\t\t}, 1000)\r\n\t})\r\n\tcleanup(() => {\r\n\t\tif (t) clearTimeout(t)\r\n\t})\r\n})"
+                    }
+                }
             }
         },
         "connections": [
@@ -98,20 +98,10 @@
                 "outputName": "out"
             },
             {
-                "outputNodeId": "bR8UDldSrNXhq7G1",
-                "outputName": "out",
-                "inputNodeId": "rPclLmXtm9divvKW",
-                "inputName": "in1"
-            },
-            {
                 "outputNodeId": "2dh3FCg2xuOJwaiE",
                 "outputName": "out",
                 "inputNodeId": "GpQ0Yar4lYjhA7S7",
                 "inputName": "URL"
-            },
-            {
-                "inputNodeId": "apqLrLicqgK4JSTe",
-                "inputName": "in"
             },
             {
                 "outputNodeId": "GpQ0Yar4lYjhA7S7",
@@ -120,7 +110,13 @@
                 "inputName": "in"
             },
             {
-                "outputNodeId": "rPclLmXtm9divvKW",
+                "outputNodeId": "bR8UDldSrNXhq7G1",
+                "outputName": "out",
+                "inputNodeId": "yfJFpYLnFZDl8QZE",
+                "inputName": "in1"
+            },
+            {
+                "outputNodeId": "yfJFpYLnFZDl8QZE",
                 "outputName": "out1",
                 "inputNodeId": "apqLrLicqgK4JSTe",
                 "inputName": "in"
@@ -128,10 +124,10 @@
         ],
         "_oid": "testID",
         "nodeType": "Flow",
-        "scale": 1.4641000000000006,
+        "scale": 1.4641000000000002,
         "origin": {
-            "x": 22.536380165289188,
-            "y": 25.54754628099161
+            "x": -33.27650307746664,
+            "y": -44.19641205359535
         }
     },
     "f2hHY1J1J3R42FdA": {

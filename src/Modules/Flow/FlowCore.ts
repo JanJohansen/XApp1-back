@@ -36,7 +36,7 @@ export default class FlowCore {
 		this.loadNodeTypes(__dirname + "/NodeLibrary/*/nodes/*/index.js")
 		this.syncNodes()
 		this.ensureDefaults()
-
+ 
 		// bb.oPub("flowCore", flowCoreModel)
 		// bb.onCall("deployFlow", (args) => {
 		// 	console.log("deployFlow:", args)
@@ -164,8 +164,8 @@ console.log("Module:", module)
 							if (existingConn.indexOf(dest) < 0) {
 								// Connection doesn't exist - create it!
 								this.bb.vSub(source, (val) => {
+									console.log("*** Transfering:", source, dest)
 									this.bb.vPub(dest, val)
-									log.debug("*** Transfering:", source, dest)
 								})
 							} // else NOP
 						}
@@ -257,10 +257,10 @@ export abstract class ModelInstance {
 		// })
 
 		// Run node specific setup
-		// await this.setup() // Set up specialized node as per implementation.
+		await this.setup() // Set up specialized node as per implementation.
 	}
 	abstract setup(): Promise<void> // Implemented by node Type definition! - Lifecycle handler called in FlowCore.
-	async close() {
+	async cleanup() {
 		// TODO: Store state?
 		// TODO: Unsubscribe all?
 		// more cleanup?
@@ -272,7 +272,7 @@ export abstract class ModelInstance {
 	}
 	on(path: string, cb: (value: any, path: string) => void): void {
 		// FIXME: Returned path not same as subscribed path as nodeId is added!
-		console.log("ModelInstnce SUBBIING", this.nodeId + ":" + path)
+		console.log("ModelInstnce SUBBIING", this.nodeId + "." + path)
 
 		// -----------------------------------------------------------------------------------------------
 		// FIXME: No object with id path + ins.x.v created???
@@ -288,6 +288,7 @@ export abstract class ModelInstance {
 	onAll(paths: string[], cb: (value: any, path: string) => void): void {}
 
 	setType(typeModel: any){
+		// typeModel
 		this.bb.oPub(this.nodeId, typeModel) 
 	}
 
