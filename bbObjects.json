@@ -85,7 +85,18 @@
                 "nodeTypeId": "dk.johansenweb.js_script",
                 "config": {
                     "ins": {
-                        "code": "setType({\r\n\tname: \"Debounce\",\r\n\tnodeGroup: \"IO\",\r\n\tnodeTypeId: \"dk.johansenweb.debouncer\",\r\n\tdescription: \"Test function node. (Debounce input example.)\",\r\n\tins: { in1: { description: \"Input number 1\" } },\r\n\touts: { out1: { description: \"Output number 1\" } }\r\n})\r\n\r\nsetup(async () => {\r\n\tlet t = null\r\n\ton(\"ins.in1\", (val) => {\r\n\t\tlog(\"VAL in:\", val)\r\n\t\tif (t) clearTimeout(t)\r\n\t\tt = setTimeout(() => {\r\n\t\t\tset(\"outs.out1\", val)\r\n\t\t\tlog(\"VAL out:\", val)\r\n\t\t}, 1000)\r\n\t})\r\n\tcleanup(() => {\r\n\t\tif (t) clearTimeout(t)\r\n\t})\r\n})"
+                        "code": "setType({\r\n\tname: \"Debounce\",\r\n\tnodeGroup: \"IO\",\r\n\tnodeTypeId: \"dk.johansenweb.debouncer\",\r\n\tdescription: \"Test function node. (Debounce input example.)\",\r\n\tins: { in1: { description: \"Input number 1\" } },\r\n\touts: { out1: { description: \"Output number 1\" } }\r\n})\r\n\r\nsetup(async () => {\r\n    console.log(\"Script - settign up!\")\r\n\tlet t = null\r\n\ton(\"ins.in1\", (val) => {\r\n\t\tlog(\"Script - VAL in:\", val)\r\n\t\tif (t) clearTimeout(t)\r\n\t\tt = setTimeout(() => {\r\n\t\t\tset(\"outs.out1\", val)\r\n\t\t\tlog(\"Script - VAL out:\", val)\r\n\t\t}, 1000)\r\n\t})\r\n\tcleanup(() => {\r\n        log(\"Script - Cleanup...\")\r\n\t\tif (t) clearTimeout(t)\r\n\t})\r\n})"
+                    }
+                }
+            },
+            "C02IICqmFQP7CsAn": {
+                "id": "C02IICqmFQP7CsAn",
+                "x": 503.5697326660156,
+                "y": 317.983154296875,
+                "nodeTypeId": "dk.johansenweb.js_script",
+                "config": {
+                    "ins": {
+                        "code": "setType({\r\n    ins: { in1: {} },\r\n    outs: { out1: {} }\r\n})\r\n\r\nsetup(async () => {\r\n    console.log(\"Script - settign up!\")\r\n    on(\"ins.in1\", (val) => {\r\n        log(\"Script - VAL in:\", val)\r\n        set(\"outs.out1\", val)\r\n        log(\"Script - VAL out:\", val)\r\n    })\r\n})"
                     }
                 }
             }
@@ -126,8 +137,8 @@
         "nodeType": "Flow",
         "scale": 1.4641000000000002,
         "origin": {
-            "x": -33.27650307746664,
-            "y": -44.19641205359535
+            "x": -33.27650307746661,
+            "y": -45.55915041817455
         }
     },
     "f2hHY1J1J3R42FdA": {

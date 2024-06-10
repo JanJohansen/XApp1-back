@@ -103,9 +103,10 @@ console.log("Module:", module)
 							const existingNode = this.flowNodes[subNodeId]
 							if (existingNode) {
 								// Node instance exists -----------------------
-
 								if (nodeModel == null) {
 									// TODO: Delete node instance
+									existingNode.cleanup()
+									delete this.flowNodes[subNodeId]
 								} else {
 									// Update of this instance.
 									// Patch config data inputs
@@ -120,7 +121,7 @@ console.log("Module:", module)
 												"=",
 												nodeConfig.ins[inName]
 											)
-										}
+										} 
 									}
 								} 
 							} else {
@@ -134,13 +135,14 @@ console.log("Module:", module)
 									this.flowNodes[subNodeId] = new nodeTypeInfo.class(this.bb, subNodeId, nodeModel)
 
 									// Set config..
+									console.log("Setting node config for - ", subNodeId)
 									const newNodeConfig = nodeModel.config
 									if (newNodeConfig && newNodeConfig.ins) {
 										for (const inName in newNodeConfig.ins) {
 											this.bb.vPub(subNodeId + ".ins." + inName, newNodeConfig.ins[inName])
 										}
 									}
-
+ 
 									// Call setup function on instance to initialize node.
 									this.flowNodes[subNodeId].setup()
 								} else {
@@ -153,6 +155,7 @@ console.log("Module:", module)
 						}
 
 						// Create connections.
+						// FIXME: DOn't double "connections" when a flow is redeployed!!!
 						for (const connectionIdx in upd.connections) {
 							const connection = upd.connections[connectionIdx]
 							const source = connection.outputNodeId + ".outs." + connection.outputName
@@ -164,7 +167,7 @@ console.log("Module:", module)
 							if (existingConn.indexOf(dest) < 0) {
 								// Connection doesn't exist - create it!
 								this.bb.vSub(source, (val) => {
-									console.log("*** Transfering:", source, dest)
+									// console.log(source, "-->", dest)
 									this.bb.vPub(dest, val)
 								})
 							} // else NOP
@@ -237,34 +240,8 @@ export abstract class ModelInstance {
 			flowNodeTypeId: this.typeInfo?.nodeTypeId,
 			deployed: true 
 		}) 
-		// // set default inputs if not existing
-		// this.bb.oSub(this.nodeId, (nodeUpd: IFlowNode) => {
-		// 	if (nodeUpd.nodeTypeId) {
-		// 		this.bb.oSub(nodeUpd.nodeTypeId, (nodeTypeUpd: IFlowNodeTypeInfo) => {
-		// 			if (nodeTypeUpd.ins) {
-		// 				for (let input in nodeTypeUpd.ins) {
-		// 					if (!this.bb.vExists(this.nodeId + ".ins." + input)) {
-		// 						// Input doesn't exist as variable. Create it.
-		// 						let inputType = nodeTypeUpd.ins[input]
-		// 						if ("default" in inputType)
-		// 							this.bb.vPub(this.nodeId + ".ins." + input, inputType.default)
-		// 						else console.log("***NO default value")
-		// 					} else console.log("***Value exists")
-		// 				}
-		// 			}
-		// 		})
-		// 	} 
-		// })
-
-		// Run node specific setup
-		await this.setup() // Set up specialized node as per implementation.
 	}
-	abstract setup(): Promise<void> // Implemented by node Type definition! - Lifecycle handler called in FlowCore.
-	async cleanup() {
-		// TODO: Store state?
-		// TODO: Unsubscribe all?
-		// more cleanup?
-	}
+	
 	set(path: string, value: any): void {
 		this.bb.vPub(this.nodeId + "." + path, value)
 		this.bb.vPub(this.nodeId + ".__UIEvent", path)
@@ -294,5 +271,13 @@ export abstract class ModelInstance {
 
 	log = {
 		developer: console.log
+	}
+	
+	//Lifecycle handlers called in FlowCore!
+	abstract setup(): Promise<void> // Implemented by node Type definition! 
+	async cleanup() {
+		// TODO: Store state?
+		// TODO: Unsubscribe all?
+		// more cleanup?
 	}
 }

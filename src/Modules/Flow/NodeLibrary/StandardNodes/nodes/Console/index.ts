@@ -16,9 +16,4 @@ export class NodeImplementation extends ModelInstance {
 			console.log(v)
 		})
 	}
-	
-	// TODO: takeDown
-	async takeDown(){
-
-	}
 }
